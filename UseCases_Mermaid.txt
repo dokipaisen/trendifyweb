@@ -1,0 +1,153 @@
+=== 1. SƠ ĐỒ USE CASE TỔNG (OVERALL USE CASE DIAGRAM) ===
+Sao chép đoạn mã dưới đây vào Draw.io (Insert -> Advanced -> Mermaid):
+
+```mermaid
+graph LR
+    %% Định nghĩa các Tác nhân (Actors)
+    ActorCustomer["👤 Khách hàng (Customer)"]
+    ActorEmployee["💼 Nhân viên (Employee)"]
+    ActorAdmin["🔑 Admin"]
+
+    subgraph SystemBoundary ["Hệ thống Website Bán Quần Áo (Trendify)"]
+        UC01(["UC-01: Đăng nhập & Đăng ký"])
+        UC02(["UC-02: Xem danh mục & Lọc sản phẩm"])
+        UC03(["UC-03: Chi tiết sản phẩm & Đánh giá"])
+        UC04(["UC-04: Quản lý giỏ hàng trực tuyến"])
+        UC05(["UC-05: Áp dụng mã giảm giá"])
+        UC06(["UC-06: Đặt hàng & Thanh toán"])
+        UC07(["UC-07: Chatbot tư vấn chọn size"])
+        UC08(["UC-08: Đăng ký nhận bản tin (Newsletter)"])
+        UC09(["UC-09: Dashboard thống kê doanh thu"])
+        UC10(["UC-10: Quản lý sản phẩm & danh mục"])
+        UC11(["UC-11: Quản lý đơn hàng (CMS)"])
+        UC12(["UC-12: Quản lý tài khoản người dùng"])
+        UC13(["UC-13: Quản lý Voucher & Khuyến mãi"])
+        UC14(["UC-14: Quản lý Banner quảng cáo"])
+        UC15(["UC-15: Tra cứu tồn kho & Biến thể"])
+        UC16(["UC-16: Xử lý đơn hàng tác nghiệp"])
+        UC17(["UC-17: Phân quyền & Bảo mật hệ thống"])
+    end
+
+    %% Liên kết Tác nhân với Use Cases
+    ActorCustomer --> UC01
+    ActorCustomer --> UC02
+    ActorCustomer --> UC03
+    ActorCustomer --> UC04
+    ActorCustomer --> UC05
+    ActorCustomer --> UC06
+    ActorCustomer --> UC07
+    ActorCustomer --> UC08
+
+    ActorEmployee --> UC01
+    ActorEmployee --> UC10
+    ActorEmployee --> UC11
+    ActorEmployee --> UC15
+    ActorEmployee --> UC16
+
+    ActorAdmin --> UC01
+    ActorAdmin --> UC09
+    ActorAdmin --> UC10
+    ActorAdmin --> UC11
+    ActorAdmin --> UC12
+    ActorAdmin --> UC13
+    ActorAdmin --> UC14
+    ActorAdmin --> UC17
+```
+
+
+=== 2. SƠ ĐỒ USE CASE CHI TIẾT - PHÂN HỆ KHÁCH HÀNG ===
+Sao chép đoạn mã dưới đây vào Draw.io (Insert -> Advanced -> Mermaid):
+
+```mermaid
+graph LR
+    ActorCustomer["👤 Khách hàng (Customer)"]
+    
+    subgraph CustomerSystem ["Phân hệ Khách hàng (Frontend)"]
+        UC01(["UC-01: Đăng nhập & Đăng ký"])
+        UC02(["UC-02: Xem danh mục & Lọc"])
+        
+        UC03(["UC-03: Chi tiết sản phẩm"])
+        UC03_1(["Viết đánh giá & Nhận xét"])
+        
+        UC04(["UC-04: Quản lý giỏ hàng"])
+        UC04_1(["Cập nhật số lượng / Xóa"])
+        
+        UC06(["UC-06: Đặt hàng & Thanh toán"])
+        UC05(["UC-05: Áp dụng mã giảm giá (Voucher)"])
+        UC06_1(["Thanh toán quét mã VietQR"])
+        
+        UC07(["UC-07: Chatbot tư vấn"])
+        UC07_1(["Tính size tự động (chiều cao, cân nặng)"])
+        
+        UC08(["UC-08: Đăng ký Newsletter"])
+    end
+    
+    %% Mối quan hệ chính
+    ActorCustomer --> UC01
+    ActorCustomer --> UC02
+    ActorCustomer --> UC03
+    ActorCustomer --> UC04
+    ActorCustomer --> UC06
+    ActorCustomer --> UC07
+    ActorCustomer --> UC08
+    
+    %% Quan hệ Include và Extend
+    UC03 -.->|"<<extend>>"| UC03_1
+    UC04 -.->|"<<extend>>"| UC04_1
+    UC06 -.->|"<<extend>>"| UC05
+    UC06 -.->|"<<extend>>"| UC06_1
+    UC07 -.->|"<<extend>>"| UC07_1
+```
+
+
+=== 3. SƠ ĐỒ USE CASE CHI TIẾT - PHÂN HỆ QUẢN TRỊ ===
+Sao chép đoạn mã dưới đây vào Draw.io (Insert -> Advanced -> Mermaid):
+
+```mermaid
+graph LR
+    ActorAdmin["🔑 Admin (Quản trị viên)"]
+    ActorEmployee["💼 Nhân viên (Employee)"]
+    
+    subgraph AdminSystem ["Phân hệ Quản trị & Tác nghiệp (CMS)"]
+        UC01(["UC-01: Đăng nhập hệ thống"])
+        UC09(["UC-09: Dashboard thống kê doanh thu"])
+        
+        UC10(["UC-10: Quản lý sản phẩm & danh mục"])
+        UC10_1(["Thêm / Sửa / Ẩn sản phẩm"])
+        UC10_2(["Cấu hình biến thể size/màu"])
+        
+        UC11(["UC-11: Quản lý đơn hàng (CMS)"])
+        UC11_1(["Duyệt yêu cầu hủy đơn"])
+        
+        UC12(["UC-12: Quản lý tài khoản người dùng"])
+        UC13(["UC-13: Quản lý Voucher & Khuyến mãi"])
+        UC14(["UC-14: Quản lý Banner quảng cáo"])
+        
+        UC15(["UC-15: Tra cứu tồn kho & Biến thể"])
+        UC16(["UC-16: Xử lý đơn hàng tác nghiệp"])
+        
+        UC17(["UC-17: Phân quyền & Bảo mật hệ thống"])
+    end
+    
+    %% Mối quan hệ của Nhân viên
+    ActorEmployee --> UC01
+    ActorEmployee --> UC10
+    ActorEmployee --> UC11
+    ActorEmployee --> UC15
+    ActorEmployee --> UC16
+    
+    %% Mối quan hệ của Admin
+    ActorAdmin --> UC01
+    ActorAdmin --> UC09
+    ActorAdmin --> UC10
+    ActorAdmin --> UC11
+    ActorAdmin --> UC12
+    ActorAdmin --> UC13
+    ActorAdmin --> UC14
+    ActorAdmin --> UC17
+    
+    %% Quan hệ Include và Extend trong CMS
+    UC10 -->|"<<include>>"| UC10_1
+    UC10 -->|"<<include>>"| UC10_2
+    UC11 -.->|"<<extend>>"| UC11_1
+```
