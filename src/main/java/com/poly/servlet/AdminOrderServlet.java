@@ -46,7 +46,10 @@ public class AdminOrderServlet extends HttpServlet {
 
             try {
                 int orderId = Integer.parseInt(idStr);
-                boolean success = orderDao.updateStatus(orderId, status, paymentStatus);
+                com.poly.entity.User currentUser = (com.poly.entity.User) session.getAttribute("currentUser");
+                Integer employeeId = (currentUser != null) ? currentUser.getId() : null;
+                
+                boolean success = orderDao.updateStatus(orderId, status, paymentStatus, employeeId);
                 if (success) {
                     session.setAttribute("adminSuccess", "Cập nhật trạng thái đơn hàng thành công.");
                 } else {
