@@ -55,6 +55,9 @@ public class Order {
     @Column(name = "status")
     private String status; // 'PENDING', 'CONFIRMED', 'PROCESSING', 'SHIPPING', 'DELIVERED', 'CANCELLED'
 
+    @Column(name = "employee_id")
+    private Integer employeeId;
+
     @Column(name = "created_at", insertable = false, updatable = false)
     private Timestamp createdAt;
 

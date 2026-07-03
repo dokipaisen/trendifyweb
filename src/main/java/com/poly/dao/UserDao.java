@@ -110,6 +110,17 @@ public class UserDao {
         }
     }
 
+    public List<User> findStaffs() {
+        EntityManager em = JpaUtils.getEntityManager();
+        try {
+            TypedQuery<User> query = em.createQuery(
+                "SELECT u FROM User u WHERE u.role = 'ADMIN' OR u.role = 'EMPLOYEE' ORDER BY u.fullName ASC", User.class);
+            return query.getResultList();
+        } finally {
+            em.close();
+        }
+    }
+
     public List<User> findAll() {
         EntityManager em = JpaUtils.getEntityManager();
         try {
