@@ -27,6 +27,15 @@ public class DatabaseSeeder {
         EntityManager em = JpaUtils.getEntityManager();
         try {
             em.getTransaction().begin();
+            
+            // Alter table to add employee_id column if it does not exist
+            try {
+                em.createNativeQuery("ALTER TABLE orders ADD employee_id INT FOREIGN KEY REFERENCES users(id) ON DELETE SET NULL").executeUpdate();
+                System.out.println("Altered orders table: added employee_id column successfully!");
+            } catch (Exception ex) {
+                System.out.println("Note: employee_id column might already exist: " + ex.getMessage());
+            }
+
             for (Map.Entry<Integer, String> entry : imageMap.entrySet()) {
                 Product p = em.find(Product.class, entry.getKey());
                 if (p != null) {

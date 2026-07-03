@@ -22,40 +22,62 @@ public class AdminDashboardServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        List<Order> allOrders = orderDao.findAll();
-        
-        BigDecimal totalRevenue = BigDecimal.ZERO;
-        int totalOrdersCount = allOrders.size();
-        
-        for (Order o : allOrders) {
-            if (!"CANCELLED".equals(o.getStatus())) {
-                totalRevenue = totalRevenue.add(o.getTotalAmount());
-            }
+        // 1. Get filter parameters
+        String empIdStr = req.getParameter("employeeId");
+        String startDate = req.getParameter("startDate");
+        String endDate = req.getParameter("endDate");
+        String monthStr = req.getParameter("month");
+        String yearStr = req.getParameter("year");
+
+        Integer employeeId = null;
+        if (empIdStr != null && !empIdStr.trim().isEmpty()) {
+            try { employeeId = Integer.parseInt(empIdStr); } catch (Exception ignored) {}
         }
+        Integer month = null;
+        if (monthStr != null && !monthStr.trim().isEmpty()) {
+            try { month = Integer.parseInt(monthStr); } catch (Exception ignored) {}
+        }
+        Integer year = null;
+        if (yearStr != null && !yearStr.trim().isEmpty()) {
+            try { year = Integer.parseInt(yearStr); } catch (Exception ignored) {}
+        }
+        if (month != null && year == null) {
+            year = java.time.LocalDate.now().getYear();
+        }
+
+        // 2. Fetch data from DAO
+        List<com.poly.entity.User> staffList = userDao.findStaffs();
+        Object[] stats = orderDao.getStatistics(employeeId, startDate, endDate, month, year);
+        BigDecimal totalRevenue = (BigDecimal) stats[0];
+        long totalOrdersCount = (Long) stats[1];
 
         int totalProducts = productDao.findAll(null, null, null, null, null, "ALL").size();
         int totalUsers = userDao.findAll().size();
 
-        // Slice first 8 orders for SVG chart
+        List<Order> filteredOrders = orderDao.findFilteredOrders(employeeId, startDate, endDate, month, year);
+        List<Object[]> employeeRankings = orderDao.getRevenueByEmployee(startDate, endDate, month, year);
+
+        // Slice first 8 orders for SVG chart representing filtered revenue
         List<Order> chartOrders = new ArrayList<>();
         double maxOrderAmount = 10000.0; // Avoid divide by zero
-        
-        int limit = Math.min(8, allOrders.size());
+        int limit = Math.min(8, filteredOrders.size());
         for (int i = 0; i < limit; i++) {
-            Order o = allOrders.get(i);
+            Order o = filteredOrders.get(i);
             chartOrders.add(o);
             if (o.getTotalAmount().doubleValue() > maxOrderAmount) {
                 maxOrderAmount = o.getTotalAmount().doubleValue();
             }
         }
 
-        // Slice first 10 orders for Recent List
+        // Slice first 10 orders for Recent List (representing filtered list)
         List<Order> recentOrders = new ArrayList<>();
-        int limitList = Math.min(10, allOrders.size());
+        int limitList = Math.min(10, filteredOrders.size());
         for (int i = 0; i < limitList; i++) {
-            recentOrders.add(allOrders.get(i));
+            recentOrders.add(filteredOrders.get(i));
         }
 
+        // 3. Set request attributes
+        req.setAttribute("staffList", staffList);
         req.setAttribute("totalRevenue", totalRevenue);
         req.setAttribute("totalOrders", totalOrdersCount);
         req.setAttribute("totalProducts", totalProducts);
@@ -63,6 +85,14 @@ public class AdminDashboardServlet extends HttpServlet {
         req.setAttribute("chartOrders", chartOrders);
         req.setAttribute("maxOrderAmount", maxOrderAmount);
         req.setAttribute("recentOrdersList", recentOrders);
+        req.setAttribute("employeeRankings", employeeRankings);
+
+        // Keep filter values on UI
+        req.setAttribute("selectedEmployeeId", employeeId);
+        req.setAttribute("selectedStartDate", startDate);
+        req.setAttribute("selectedEndDate", endDate);
+        req.setAttribute("selectedMonth", month);
+        req.setAttribute("selectedYear", year);
 
         req.getRequestDispatcher("/views/admin/dashboard.jsp").forward(req, resp);
     }
