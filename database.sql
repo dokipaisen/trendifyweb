@@ -12,6 +12,7 @@ USE clothingstore_db;
 GO
 
 -- Xóa các bảng nếu tồn tại để tránh xung đột (xóa theo thứ tự khóa ngoại)
+IF OBJECT_ID('chat_messages', 'U') IS NOT NULL DROP TABLE chat_messages;
 IF OBJECT_ID('banners', 'U') IS NOT NULL DROP TABLE banners;
 IF OBJECT_ID('reviews', 'U') IS NOT NULL DROP TABLE reviews;
 IF OBJECT_ID('order_items', 'U') IS NOT NULL DROP TABLE order_items;
@@ -36,6 +37,18 @@ CREATE TABLE users (
     address NVARCHAR(255),
     role VARCHAR(20) DEFAULT 'CUSTOMER', -- 'ADMIN', 'EMPLOYEE', 'CUSTOMER'
     status NVARCHAR(20) DEFAULT 'ACTIVE', -- 'ACTIVE', 'INACTIVE'
+    created_at DATETIME DEFAULT GETDATE()
+);
+
+-- 2.1. Tạo Bảng Chat_Messages (Lịch sử hội thoại AI & Live Chat)
+CREATE TABLE chat_messages (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    chat_session_id VARCHAR(100) NOT NULL,
+    sender VARCHAR(50) NOT NULL, -- 'USER', 'AI', 'STAFF'
+    sender_name NVARCHAR(100),
+    message NVARCHAR(MAX) NOT NULL,
+    is_read BIT DEFAULT 0,
+    mode VARCHAR(20) DEFAULT 'AI', -- 'AI', 'STAFF'
     created_at DATETIME DEFAULT GETDATE()
 );
 
