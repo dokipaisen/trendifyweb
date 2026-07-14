@@ -3,7 +3,7 @@ package com.poly.entity;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
@@ -64,4 +64,7 @@ public class Order {
     // Transient list of items
     @Transient
     private List<OrderItem> items;
+
+    @Transient
+    private String payUrl;
 }
