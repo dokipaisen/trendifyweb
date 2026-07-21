@@ -49,6 +49,9 @@ public class AdminController {
     @Autowired
     private PromotionRepository promotionRepository;
 
+    @Autowired
+    private BannerRepository bannerRepository;
+
     // Helper to check admin/staff session and role
     private boolean checkRole(HttpSession session, List<String> allowedRoles) {
         User currentUser = (User) session.getAttribute("currentUser");
@@ -482,5 +485,56 @@ public class AdminController {
             return ResponseEntity.ok(Map.of("message", "Xóa khuyến mãi thành công."));
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "Không tìm thấy khuyến mãi."));
+    }
+
+    // --- Banner Management API (ADMIN & EMPLOYEE) ---
+    @GetMapping("/banners")
+    public ResponseEntity<?> getAllBanners(HttpSession session) {
+        if (!checkRole(session, List.of("ADMIN", "EMPLOYEE"))) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("message", "Không có quyền thực hiện."));
+        }
+        return ResponseEntity.ok(bannerRepository.findAll());
+    }
+
+    @PostMapping("/banners")
+    public ResponseEntity<?> createBanner(@RequestBody Banner banner, HttpSession session) {
+        if (!checkRole(session, List.of("ADMIN", "EMPLOYEE"))) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("message", "Không có quyền thực hiện."));
+        }
+        if (banner.getActive() == null) banner.setActive(true);
+        if (banner.getDisplayOrder() == null) banner.setDisplayOrder(0);
+        Banner saved = bannerRepository.save(banner);
+        return ResponseEntity.status(HttpStatus.CREATED).body(saved);
+    }
+
+    @PutMapping("/banners/{id}")
+    public ResponseEntity<?> updateBanner(@PathVariable("id") Integer id, @RequestBody Banner bannerUpdates, HttpSession session) {
+        if (!checkRole(session, List.of("ADMIN", "EMPLOYEE"))) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("message", "Không có quyền thực hiện."));
+        }
+        Optional<Banner> bannerOpt = bannerRepository.findById(id);
+        if (bannerOpt.isPresent()) {
+            Banner existing = bannerOpt.get();
+            existing.setTitle(bannerUpdates.getTitle());
+            existing.setImageUrl(bannerUpdates.getImageUrl());
+            existing.setLinkUrl(bannerUpdates.getLinkUrl());
+            existing.setActive(bannerUpdates.getActive());
+            existing.setDisplayOrder(bannerUpdates.getDisplayOrder());
+            Banner saved = bannerRepository.save(existing);
+            return ResponseEntity.ok(saved);
+        }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "Không tìm thấy Banner."));
+    }
+
+    @DeleteMapping("/banners/{id}")
+    public ResponseEntity<?> deleteBanner(@PathVariable("id") Integer id, HttpSession session) {
+        if (!checkRole(session, List.of("ADMIN", "EMPLOYEE"))) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("message", "Không có quyền thực hiện."));
+        }
+        if (bannerRepository.existsById(id)) {
+            bannerRepository.deleteById(id);
+            return ResponseEntity.ok(Map.of("message", "Xóa Banner thành công."));
+        }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "Không tìm thấy Banner."));
     }
 }

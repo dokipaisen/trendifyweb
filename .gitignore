@@ -27,3 +27,7 @@ buildNumber.properties
 # OS files
 .DS_Store
 Thumbs.db
+
+# Uploads
+uploads/*
+!.gitkeep

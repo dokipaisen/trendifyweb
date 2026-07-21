@@ -20,6 +20,7 @@ import OrderManagementView from '../views/admin/OrderManagementView.vue';
 import PromotionManagementView from '../views/admin/PromotionManagementView.vue';
 import UserManagementView from '../views/admin/UserManagementView.vue';
 import SupportChatManagementView from '../views/admin/SupportChatManagementView.vue';
+import BannerManagementView from '../views/admin/BannerManagementView.vue';
 
 const routes = [
   { path: '/', name: 'home', component: HomeView },
@@ -42,6 +43,7 @@ const routes = [
       { path: 'dashboard', name: 'admin-dashboard', component: DashboardView, meta: { requiresAdminOnly: true } },
       { path: 'products', name: 'admin-products', component: ProductManagementView },
       { path: 'categories', name: 'admin-categories', component: CategoryManagementView },
+      { path: 'banners', name: 'admin-banners', component: BannerManagementView },
       { path: 'orders', name: 'admin-orders', component: OrderManagementView },
       { path: 'promotions', name: 'admin-promotions', component: PromotionManagementView, meta: { requiresAdminOnly: true } },
       { path: 'users', name: 'admin-users', component: UserManagementView, meta: { requiresAdminOnly: true } },

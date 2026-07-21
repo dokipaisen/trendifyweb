@@ -197,7 +197,7 @@ public class OrderController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> getOrderDetail(@PathVariable Integer id, HttpSession session) {
+    public ResponseEntity<?> getOrderDetail(@PathVariable("id") Integer id, HttpSession session) {
         User currentUser = (User) session.getAttribute("currentUser");
         if (currentUser == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Chưa đăng nhập."));
@@ -224,7 +224,7 @@ public class OrderController {
 
     @PostMapping("/simulate-payment/{orderCode}")
     @Transactional
-    public ResponseEntity<?> simulatePayment(@PathVariable String orderCode) {
+    public ResponseEntity<?> simulatePayment(@PathVariable("orderCode") String orderCode) {
         Optional<Order> orderOpt = orderRepository.findByOrderCode(orderCode);
         if (orderOpt.isPresent()) {
             Order order = orderOpt.get();

@@ -52,64 +52,66 @@
     </div>
 
     <!-- Modal Form (Create / Edit) -->
-    <div v-if="showModal" class="modal-overlay">
-      <div class="modal-content card">
-        <div class="modal-header">
-          <h2>{{ isEditMode ? 'Cập nhật Danh mục' : 'Thêm Danh mục mới' }}</h2>
-          <button @click="showModal = false" class="close-modal">&times;</button>
-        </div>
-
-        <form @submit.prevent="saveCategory" class="modal-form">
-          <div class="form-group">
-            <label for="m-name">Tên danh mục *</label>
-            <input 
-              type="text" 
-              id="m-name" 
-              v-model="catForm.name" 
-              required 
-              placeholder="ví dụ: Áo thun, Quần Jean..."
-              class="form-control"
-            >
+    <Teleport to="body">
+      <div v-if="showModal" class="modal-overlay" @click.self="showModal = false">
+        <div class="modal-content card">
+          <div class="modal-header">
+            <h2>{{ isEditMode ? 'Cập nhật Danh mục' : 'Thêm Danh mục mới' }}</h2>
+            <button @click="showModal = false" class="close-modal">&times;</button>
           </div>
 
-          <div class="form-group">
-            <label for="m-desc">Mô tả chi tiết</label>
-            <textarea 
-              id="m-desc" 
-              v-model="catForm.description" 
-              rows="3" 
-              placeholder="Nhập vài dòng mô tả ngắn..."
-              class="form-control"
-            ></textarea>
-          </div>
-
-          <div class="form-group">
-            <label>Hình ảnh danh mục</label>
-            <div class="image-upload-wrapper">
-              <div class="img-preview" v-if="catForm.imageUrl">
-                <img :src="catForm.imageUrl" alt="Preview">
-                <button type="button" @click="catForm.imageUrl = ''" class="remove-preview-btn">&times;</button>
-              </div>
-              <div class="upload-trigger" v-else>
-                <input type="file" @change="uploadImage" accept="image/*" class="file-input-hide" id="img-upload">
-                <label for="img-upload" class="upload-label">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
-                  <span>Tải ảnh lên</span>
-                </label>
-              </div>
-              <p v-if="uploading" class="uploading-text">Đang tải ảnh lên...</p>
+          <form @submit.prevent="saveCategory" class="modal-form">
+            <div class="form-group">
+              <label for="m-name">Tên danh mục *</label>
+              <input 
+                type="text" 
+                id="m-name" 
+                v-model="catForm.name" 
+                required 
+                placeholder="ví dụ: Áo Thun, Quần Jean..."
+                class="form-control"
+              >
             </div>
-          </div>
 
-          <div class="modal-actions">
-            <button type="button" @click="showModal = false" class="btn btn-outline">Huỷ bỏ</button>
-            <button type="submit" class="btn btn-primary" :disabled="uploading">
-              {{ isEditMode ? 'Cập nhật' : 'Thêm mới' }}
-            </button>
-          </div>
-        </form>
+            <div class="form-group">
+              <label for="m-desc">Mô tả ngắn</label>
+              <textarea 
+                id="m-desc" 
+                v-model="catForm.description" 
+                rows="3" 
+                placeholder="Nhập vài dòng mô tả ngắn..."
+                class="form-control"
+              ></textarea>
+            </div>
+
+            <div class="form-group">
+              <label>Hình ảnh danh mục</label>
+              <div class="image-upload-wrapper">
+                <div class="img-preview" v-if="catForm.imageUrl">
+                  <img :src="catForm.imageUrl" alt="Preview">
+                  <button type="button" @click="catForm.imageUrl = ''" class="remove-preview-btn">&times;</button>
+                </div>
+                <div class="upload-trigger" v-else>
+                  <input type="file" @change="uploadImage" accept="image/*" class="file-input-hide" id="img-upload">
+                  <label for="img-upload" class="upload-label">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                    <span>Tải ảnh lên</span>
+                  </label>
+                </div>
+                <p v-if="uploading" class="uploading-text">Đang tải ảnh lên...</p>
+              </div>
+            </div>
+
+            <div class="modal-actions">
+              <button type="button" @click="showModal = false" class="btn btn-outline">Huỷ bỏ</button>
+              <button type="submit" class="btn btn-primary" :disabled="uploading">
+                {{ isEditMode ? 'Cập nhật' : 'Thêm mới' }}
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
-    </div>
+    </Teleport>
   </div>
 </template>
 
@@ -285,23 +287,34 @@ export default {
   color: #e74c3c;
 }
 
-/* Modal Styling */
+/* Modal Styles */
 .modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0,0,0,0.5);
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: 99999;
+  padding: 20px;
+  box-sizing: border-box;
 }
 
 .modal-content {
-  width: 500px;
+  width: 100%;
+  max-width: 520px;
+  max-height: 85vh;
+  background: #ffffff;
+  border-radius: 12px;
   padding: 30px;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+  overflow-y: auto;
+  position: relative;
+  margin: auto;
 }
 
 .modal-header {

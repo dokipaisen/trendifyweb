@@ -65,14 +65,14 @@ public class ChatController {
     }
 
     @GetMapping("/messages/{sessionId}")
-    public ResponseEntity<?> getMessages(@PathVariable String sessionId) {
+    public ResponseEntity<?> getMessages(@PathVariable("sessionId") String sessionId) {
         List<ChatMessage> list = chatMessageRepository.findByChatSessionIdOrderByCreatedAtAsc(sessionId);
         return ResponseEntity.ok(list);
     }
 
     @PostMapping("/switch-mode/{sessionId}")
     @Transactional
-    public ResponseEntity<?> switchMode(@PathVariable String sessionId) {
+    public ResponseEntity<?> switchMode(@PathVariable("sessionId") String sessionId) {
         // Save system message indicating queueing for Staff
         ChatMessage sysMsg = new ChatMessage();
         sysMsg.setChatSessionId(sessionId);

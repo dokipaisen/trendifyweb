@@ -38,6 +38,11 @@
           Quản lý Danh mục
         </router-link>
 
+        <!-- Banner Management (All staff) -->
+        <router-link to="/admin/banners" active-class="active">
+          Quản lý Banner
+        </router-link>
+
         <!-- Order Management (All staff) -->
         <router-link to="/admin/orders" active-class="active">
           Quản lý Đơn hàng

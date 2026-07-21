@@ -22,7 +22,7 @@ public class PromotionController {
     private PromotionRepository promotionRepository;
 
     @GetMapping("/check")
-    public ResponseEntity<?> checkPromotion(@RequestParam String code) {
+    public ResponseEntity<?> checkPromotion(@RequestParam("code") String code) {
         Optional<Promotion> promoOpt = promotionRepository.findByCode(code);
         if (promoOpt.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)

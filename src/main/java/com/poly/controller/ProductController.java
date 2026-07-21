@@ -38,12 +38,12 @@ public class ProductController {
 
     @GetMapping
     public List<Product> getProducts(
-            @RequestParam(required = false) String keyword,
-            @RequestParam(required = false) Integer categoryId,
-            @RequestParam(required = false) BigDecimal minPrice,
-            @RequestParam(required = false) BigDecimal maxPrice,
-            @RequestParam(required = false) String brand,
-            @RequestParam(defaultValue = "ACTIVE") String status
+            @RequestParam(name = "keyword", required = false) String keyword,
+            @RequestParam(name = "categoryId", required = false) Integer categoryId,
+            @RequestParam(name = "minPrice", required = false) BigDecimal minPrice,
+            @RequestParam(name = "maxPrice", required = false) BigDecimal maxPrice,
+            @RequestParam(name = "brand", required = false) String brand,
+            @RequestParam(name = "status", defaultValue = "ACTIVE") String status
     ) {
         // Find all matching products
         List<Product> products = productRepository.searchProducts(
@@ -76,7 +76,7 @@ public class ProductController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> getProductDetail(@PathVariable Integer id) {
+    public ResponseEntity<?> getProductDetail(@PathVariable("id") Integer id) {
         Optional<Product> productOpt = productRepository.findById(id);
         if (productOpt.isPresent()) {
             Product p = productOpt.get();
@@ -109,7 +109,7 @@ public class ProductController {
 
     @PostMapping("/{id}/reviews")
     public ResponseEntity<?> addProductReview(
-            @PathVariable Integer id,
+            @PathVariable("id") Integer id,
             @RequestBody Review reviewRequest,
             HttpSession session
     ) {

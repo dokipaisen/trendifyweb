@@ -115,8 +115,8 @@ public class CartController {
 
     @PutMapping("/quantity")
     public ResponseEntity<?> updateQuantity(
-            @RequestParam Integer variantId,
-            @RequestParam Integer quantity,
+            @RequestParam("variantId") Integer variantId,
+            @RequestParam("quantity") Integer quantity,
             HttpSession session
     ) {
         User currentUser = (User) session.getAttribute("currentUser");
@@ -140,7 +140,7 @@ public class CartController {
 
     @DeleteMapping("/remove")
     @Transactional
-    public ResponseEntity<?> removeFromCart(@RequestParam Integer variantId, HttpSession session) {
+    public ResponseEntity<?> removeFromCart(@RequestParam("variantId") Integer variantId, HttpSession session) {
         User currentUser = (User) session.getAttribute("currentUser");
         if (currentUser == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Chưa đăng nhập."));

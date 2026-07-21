@@ -66,7 +66,7 @@
                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
                     Sửa
                   </button>
-                  <button @click="handleDeleteProduct(prod.id)" class="btn-action delete-btn">
+                  <button @click="handleDeleteProduct(prod)" class="btn-action delete-btn">
                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M9 6V4h6v2"></path></svg>
                     Xoá
                   </button>
@@ -79,139 +79,168 @@
     </div>
 
     <!-- Edit/Create Product Modal (Full-featured layout) -->
-    <div v-if="showModal" class="modal-overlay">
-      <div class="modal-content-lg card">
-        <div class="modal-header">
-          <h2>{{ isEditMode ? 'Cập nhật Sản phẩm' : 'Thêm Sản phẩm mới' }}</h2>
-          <button @click="showModal = false" class="close-modal">&times;</button>
+    <Teleport to="body">
+      <div v-if="showModal" class="modal-overlay">
+        <div class="modal-content-lg card">
+          <div class="modal-header">
+            <h2>{{ isEditMode ? 'Cập nhật Sản phẩm' : 'Thêm Sản phẩm mới' }}</h2>
+            <button @click="showModal = false" class="close-modal">&times;</button>
+          </div>
+  
+          <form @submit.prevent="saveProduct" class="modal-form">
+            <!-- Two-column main inputs -->
+            <div class="form-columns">
+              <div class="form-col">
+                <div class="form-group">
+                  <label for="p-name">Tên sản phẩm *</label>
+                  <input type="text" id="p-name" v-model="prodForm.name" required class="form-control">
+                </div>
+  
+                <div class="form-group">
+                  <label for="p-brand">Thương hiệu</label>
+                  <input type="text" id="p-brand" v-model="prodForm.brand" class="form-control">
+                </div>
+  
+                <div class="form-group">
+                  <label for="p-category">Danh mục *</label>
+                  <select id="p-category" v-model="prodForm.categoryId" required class="form-control">
+                    <option v-for="cat in categories" :key="cat.id" :value="cat.id">{{ cat.name }}</option>
+                  </select>
+                </div>
+  
+                <div class="form-group">
+                  <label for="p-desc">Mô tả sản phẩm</label>
+                  <textarea id="p-desc" v-model="prodForm.description" rows="4" class="form-control"></textarea>
+                </div>
+              </div>
+  
+              <div class="form-col">
+                <div class="form-group">
+                  <label for="p-price">Giá bán (VND) *</label>
+                  <input type="number" id="p-price" v-model.number="prodForm.price" required class="form-control">
+                </div>
+  
+                <div class="form-group">
+                  <label for="p-origPrice">Giá gốc (VND)</label>
+                  <input type="number" id="p-origPrice" v-model.number="prodForm.originalPrice" class="form-control">
+                </div>
+  
+                <div class="form-group">
+                  <label for="p-status">Trạng thái</label>
+                  <select id="p-status" v-model="prodForm.status" class="form-control">
+                    <option value="ACTIVE">ACTIVE (Đang bán)</option>
+                    <option value="INACTIVE">INACTIVE (Ngừng bán)</option>
+                  </select>
+                </div>
+  
+                <div class="form-group">
+                  <label>Ảnh đại diện sản phẩm *</label>
+                  <div class="image-upload-wrapper">
+                    <div class="img-preview" v-if="prodForm.imageUrl">
+                      <img :src="prodForm.imageUrl" alt="Preview">
+                      <button type="button" @click="prodForm.imageUrl = ''" class="remove-preview-btn">&times;</button>
+                    </div>
+                    <div class="upload-trigger" v-else>
+                      <input type="file" @change="uploadMainImage" accept="image/*" class="file-input-hide" id="main-img-upload">
+                      <label for="main-img-upload" class="upload-label">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                        <span>Tải ảnh chính</span>
+                      </label>
+                    </div>
+                    <p v-if="mainUploading" class="uploading-text">Đang tải ảnh...</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+  
+            <!-- Secondary Images & Variants Config (Only visible in Edit Mode to keep flow simple) -->
+            <div v-if="isEditMode" class="advanced-configs">
+              <div class="details-divider"></div>
+              
+              <!-- Secondary Images Config -->
+              <div class="config-widget">
+                <h3>Ảnh phụ sản phẩm</h3>
+                <div class="sec-images-row">
+                  <div class="sec-img-item" v-for="img in secondaryImages" :key="img.id">
+                    <img :src="img.imageUrl" alt="Sec image">
+                  </div>
+                  <div class="sec-img-upload-btn">
+                    <input type="file" @change="uploadSecondaryImage" accept="image/*" class="file-input-hide" id="sec-img-upload">
+                    <label for="sec-img-upload" class="sec-upload-label">+</label>
+                  </div>
+                </div>
+                <button type="button" @click="clearSecondaryImages" class="btn btn-outline btn-sm clear-sec-btn">Xoá toàn bộ ảnh phụ</button>
+              </div>
+  
+              <div class="details-divider"></div>
+  
+              <!-- Variants Table Manager -->
+              <div class="config-widget">
+                <div class="config-header">
+                  <h3>Quản lý Biến thể (Sizes & Colors)</h3>
+                  <button type="button" @click="addVariantRow" class="btn btn-outline btn-sm">➕ Thêm dòng biến thể</button>
+                </div>
+  
+                <table class="variant-mgmt-table">
+                  <thead>
+                    <tr>
+                      <th>Size (S, M, L, XL...)</th>
+                      <th>Màu sắc</th>
+                      <th>Số lượng tồn kho</th>
+                      <th>Mã SKU</th>
+                      <th>Xóa</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="(v, index) in prodForm.variants" :key="index">
+                      <td><input type="text" v-model="v.size" required class="form-control tab-input"></td>
+                      <td><input type="text" v-model="v.color" required class="form-control tab-input"></td>
+                      <td><input type="number" v-model.number="v.stock" required class="form-control tab-input"></td>
+                      <td><input type="text" v-model="v.sku" required class="form-control tab-input"></td>
+                      <td><button type="button" @click="removeVariantRow(index)" class="del-var-row-btn">&times;</button></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+  
+            <div class="modal-actions">
+              <button type="button" @click="showModal = false" class="btn btn-outline">Huỷ bỏ</button>
+              <button type="submit" class="btn btn-primary" :disabled="mainUploading || secUploading">
+                Lưu sản phẩm
+              </button>
+            </div>
+          </form>
         </div>
-
-        <form @submit.prevent="saveProduct" class="modal-form">
-          <!-- Two-column main inputs -->
-          <div class="form-columns">
-            <div class="form-col">
-              <div class="form-group">
-                <label for="p-name">Tên sản phẩm *</label>
-                <input type="text" id="p-name" v-model="prodForm.name" required class="form-control">
-              </div>
-
-              <div class="form-group">
-                <label for="p-brand">Thương hiệu</label>
-                <input type="text" id="p-brand" v-model="prodForm.brand" class="form-control">
-              </div>
-
-              <div class="form-group">
-                <label for="p-category">Danh mục *</label>
-                <select id="p-category" v-model="prodForm.categoryId" required class="form-control">
-                  <option v-for="cat in categories" :key="cat.id" :value="cat.id">{{ cat.name }}</option>
-                </select>
-              </div>
-
-              <div class="form-group">
-                <label for="p-desc">Mô tả sản phẩm</label>
-                <textarea id="p-desc" v-model="prodForm.description" rows="4" class="form-control"></textarea>
-              </div>
-            </div>
-
-            <div class="form-col">
-              <div class="form-group">
-                <label for="p-price">Giá bán (VND) *</label>
-                <input type="number" id="p-price" v-model.number="prodForm.price" required class="form-control">
-              </div>
-
-              <div class="form-group">
-                <label for="p-origPrice">Giá gốc (VND)</label>
-                <input type="number" id="p-origPrice" v-model.number="prodForm.originalPrice" class="form-control">
-              </div>
-
-              <div class="form-group">
-                <label for="p-status">Trạng thái</label>
-                <select id="p-status" v-model="prodForm.status" class="form-control">
-                  <option value="ACTIVE">ACTIVE (Đang bán)</option>
-                  <option value="INACTIVE">INACTIVE (Ngừng bán)</option>
-                </select>
-              </div>
-
-              <div class="form-group">
-                <label>Ảnh đại diện sản phẩm *</label>
-                <div class="image-upload-wrapper">
-                  <div class="img-preview" v-if="prodForm.imageUrl">
-                    <img :src="prodForm.imageUrl" alt="Preview">
-                    <button type="button" @click="prodForm.imageUrl = ''" class="remove-preview-btn">&times;</button>
-                  </div>
-                  <div class="upload-trigger" v-else>
-                    <input type="file" @change="uploadMainImage" accept="image/*" class="file-input-hide" id="main-img-upload">
-                    <label for="main-img-upload" class="upload-label">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
-                      <span>Tải ảnh chính</span>
-                    </label>
-                  </div>
-                  <p v-if="mainUploading" class="uploading-text">Đang tải ảnh...</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Secondary Images & Variants Config (Only visible in Edit Mode to keep flow simple) -->
-          <div v-if="isEditMode" class="advanced-configs">
-            <div class="details-divider"></div>
-            
-            <!-- Secondary Images Config -->
-            <div class="config-widget">
-              <h3>Ảnh phụ sản phẩm</h3>
-              <div class="sec-images-row">
-                <div class="sec-img-item" v-for="img in secondaryImages" :key="img.id">
-                  <img :src="img.imageUrl" alt="Sec image">
-                </div>
-                <div class="sec-img-upload-btn">
-                  <input type="file" @change="uploadSecondaryImage" accept="image/*" class="file-input-hide" id="sec-img-upload">
-                  <label for="sec-img-upload" class="sec-upload-label">+</label>
-                </div>
-              </div>
-              <button type="button" @click="clearSecondaryImages" class="btn btn-outline btn-sm clear-sec-btn">Xoá toàn bộ ảnh phụ</button>
-            </div>
-
-            <div class="details-divider"></div>
-
-            <!-- Variants Table Manager -->
-            <div class="config-widget">
-              <div class="config-header">
-                <h3>Quản lý Biến thể (Sizes & Colors)</h3>
-                <button type="button" @click="addVariantRow" class="btn btn-outline btn-sm">➕ Thêm dòng biến thể</button>
-              </div>
-
-              <table class="variant-mgmt-table">
-                <thead>
-                  <tr>
-                    <th>Size (S, M, L, XL...)</th>
-                    <th>Màu sắc</th>
-                    <th>Số lượng tồn kho</th>
-                    <th>Mã SKU</th>
-                    <th>Xóa</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="(v, index) in prodForm.variants" :key="index">
-                    <td><input type="text" v-model="v.size" required class="form-control tab-input"></td>
-                    <td><input type="text" v-model="v.color" required class="form-control tab-input"></td>
-                    <td><input type="number" v-model.number="v.stock" required class="form-control tab-input"></td>
-                    <td><input type="text" v-model="v.sku" required class="form-control tab-input"></td>
-                    <td><button type="button" @click="removeVariantRow(index)" class="del-var-row-btn">&times;</button></td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <div class="modal-actions">
-            <button type="button" @click="showModal = false" class="btn btn-outline">Huỷ bỏ</button>
-            <button type="submit" class="btn btn-primary" :disabled="mainUploading || secUploading">
-              Lưu sản phẩm
-            </button>
-          </div>
-        </form>
       </div>
-    </div>
+    </Teleport>
+
+    <!-- Custom Delete Confirmation Modal -->
+    <Teleport to="body">
+      <div v-if="showDeleteConfirm" class="modal-overlay">
+        <div class="modal-content-sm card">
+          <div class="modal-header">
+            <h2>Xác nhận xoá</h2>
+            <button @click="showDeleteConfirm = false" class="close-modal">&times;</button>
+          </div>
+          <div class="modal-body" style="margin: 20px 0;">
+            <p>Bạn có chắc chắn muốn xoá hoàn toàn sản phẩm <strong>{{ productToDeleteName }}</strong>?</p>
+            <p style="color: var(--gray); font-size: 13px; margin-top: 8px;">Hành động này sẽ xoá toàn bộ biến thể và ảnh phụ liên quan.</p>
+          </div>
+          <div class="modal-actions">
+            <button @click="showDeleteConfirm = false" class="btn btn-outline">Huỷ bỏ</button>
+            <button @click="confirmDeleteProduct" class="btn btn-danger">Xoá ngay</button>
+          </div>
+        </div>
+      </div>
+    </Teleport>
+
+    <!-- Toast Notifications -->
+    <Teleport to="body">
+      <div v-if="notification.show" class="toast-notification" :class="notification.type">
+        {{ notification.message }}
+      </div>
+    </Teleport>
   </div>
 </template>
 
@@ -235,6 +264,25 @@ export default {
     const mainUploading = ref(false);
     const secUploading = ref(false);
     const editId = ref(null);
+
+    const showDeleteConfirm = ref(false);
+    const productToDeleteId = ref(null);
+    const productToDeleteName = ref(null);
+
+    const notification = reactive({
+      show: false,
+      message: '',
+      type: 'success'
+    });
+
+    const showToast = (message, type = 'success') => {
+      notification.message = message;
+      notification.type = type;
+      notification.show = true;
+      setTimeout(() => {
+        notification.show = false;
+      }, 3000);
+    };
 
     const prodForm = reactive({
       name: '',
@@ -427,14 +475,21 @@ export default {
       }
     };
 
-    const handleDeleteProduct = async (id) => {
-      if (confirm('Bạn có chắc chắn muốn xoá hoàn toàn sản phẩm này?')) {
-        try {
-          await axios.delete(`/api/admin/products/${id}`);
-          fetchProducts();
-        } catch (err) {
-          console.error(err);
-        }
+    const handleDeleteProduct = (prod) => {
+      productToDeleteId.value = prod.id;
+      productToDeleteName.value = prod.name;
+      showDeleteConfirm.value = true;
+    };
+
+    const confirmDeleteProduct = async () => {
+      showDeleteConfirm.value = false;
+      try {
+        const res = await axios.delete(`/api/admin/products/${productToDeleteId.value}`);
+        showToast(res.data?.message || 'Xóa sản phẩm thành công.', 'success');
+        fetchProducts();
+      } catch (err) {
+        console.error(err);
+        showToast(err.response?.data?.message || 'Lỗi: Không thể xóa sản phẩm này. Có thể nó đang nằm trong giỏ hàng hoặc đơn hàng.', 'error');
       }
     };
 
@@ -469,6 +524,10 @@ export default {
       removeVariantRow,
       saveProduct,
       handleDeleteProduct,
+      confirmDeleteProduct,
+      showDeleteConfirm,
+      productToDeleteName,
+      notification,
       formatCurrency,
       fetchProducts
     };
@@ -744,4 +803,34 @@ export default {
   text-align: center;
   padding: 60px;
 }
+
+.modal-content-sm {
+  width: 450px;
+  padding: 30px;
+}
+
+.toast-notification {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  padding: 16px 24px;
+  border-radius: var(--radius);
+  color: var(--white);
+  font-weight: 600;
+  box-shadow: var(--shadow-lg);
+  z-index: 9999;
+  animation: slideIn 0.3s ease forwards;
+}
+.toast-notification.success {
+  background-color: #2ecc71;
+}
+.toast-notification.error {
+  background-color: #e74c3c;
+}
+@keyframes slideIn {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
 </style>
+
+
